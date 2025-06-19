@@ -3,6 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
 # Import your existing components
@@ -15,6 +16,9 @@ from utilities.prompt import AGENT_SYSTEM_PROMPT
 # Load environment variables
 load_dotenv()
 
+# Path to the directory containing static files
+STATIC_DIR = Path(__file__).resolve().parent / "static"
+
 # Add LangSmith tracing
 langsmith_client = Client()
 
@@ -26,7 +30,7 @@ config = {
 app = FastAPI(title="Tableau AI Chat", description="Simple AI chat interface for Tableau data")
 
 # Serve static files (HTML, CSS, JS)
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 # Request/Response models
 class ChatRequest(BaseModel):
@@ -69,11 +73,11 @@ agent = setup_agent()
 @app.get("/")
 def home():
     """Serve the main HTML page"""
-    return FileResponse('static/index.html')
+    return FileResponse(STATIC_DIR / "index.html")
 
 @app.get("/index.html")
 def static_index():
-    return FileResponse('static/index.html')
+    return FileResponse(STATIC_DIR / "index.html")
 
 @app.post("/chat")
 def chat(request: ChatRequest) -> ChatResponse:
